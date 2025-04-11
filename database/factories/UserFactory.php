@@ -23,12 +23,16 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $gender = $this->faker->randomElement(['male', 'female']);
+        $role = $this->faker->randomElement(['athlete', 'instructor']);
+
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
-            'remember_token' => Str::random(10),
+            'name' => $this->faker->name($gender),
+            'email' => $this->faker->unique()->safeEmail(),
+            'phone_number' => $this->faker->unique()->numerify('09#########'), // Iranian-style mobile
+            'birthdate' => $this->faker->date('Y-m-d', now()->subYears(15)), // Users at least 15
+            'role' => $role,
+            'gender' => $gender,
         ];
     }
 
@@ -37,7 +41,7 @@ class UserFactory extends Factory
      */
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'email_verified_at' => null,
         ]);
     }

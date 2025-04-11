@@ -21,6 +21,8 @@ class User extends Authenticatable
         'name',
         'email',
         'phone_number',
+        'gender',
+        'birthdate'
     ];
 
     /**
@@ -47,4 +49,16 @@ class User extends Authenticatable
     {
         return $this->hasOne(Otp::class);
     }
+
+    public function enrollments()
+    {
+        return $this->hasMany(Enrollment::class, 'user_id');
+    }
+
+    public function classes()
+    {
+        return $this->hasMany(GymClass::class, 'instructor_id');
+    }
+
+
 }

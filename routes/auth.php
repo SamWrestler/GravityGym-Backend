@@ -12,6 +12,10 @@ Route::post('/login', [AuthenticationController::class, 'login'])
     ->middleware('guest')
     ->name('login');
 
+Route::post('/complete-signup', [AuthenticationController::class, 'completeSignup'])
+    ->middleware('auth:sanctum')
+    ->name('completeSignup');
+
 Route::post('/loginExpired', [AuthenticationController::class, 'loginExpired'])
     ->middleware('guest')
     ->name('loginExpired');

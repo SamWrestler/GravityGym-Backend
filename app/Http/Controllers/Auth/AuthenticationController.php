@@ -8,7 +8,7 @@
     use App\Models\Otp;
     use App\Notifications\OtpNotification;
     use Illuminate\Http\Request;
-    use function PHPUnit\Framework\returnArgument;
+    use Morilog\Jalali\Jalalian;
 
     class AuthenticationController extends Controller
     {
@@ -19,9 +19,7 @@
             $validatedData = $request->validate([
                 'phone_number' => ['required', 'regex:/((0?9)|(\+?989))\d{2}\W?\d{3}\W?\d{4}/']
             ]);
-
             $user = User::firstOrCreate(['phone_number' => $validatedData['phone_number']]);
-
             $request->session()->put('auth', [
                 'user' => $user,
                 'remember' => $request->remember
@@ -67,6 +65,30 @@
                     'token' => $token,
                 ]);
 
+        }
+
+        public function completeSignup(Request $request)
+        {
+            $validatedData = $request->validate([
+                'fullName' => 'required|string|max:255',
+                'email' => 'nullable|email|unique:users,email',
+                'gender' => 'required|in:male,female',
+                'birthDate' => 'required',
+            ]);
+            $birthDateGregorian = Jalalian::fromFormat('Y/m/d', $validatedData['birthDate'])->toCarbon()->format('Y-m-d');
+            $user = auth()->user();
+
+            $user->update([
+                'name' => $validatedData['fullName'],
+                'email' => $validatedData['email'], // If email is provided
+                'gender' => $validatedData['gender'],
+                'birthdate' => $birthDateGregorian, // Store the converted birth date
+            ]);
+
+            return response()->json([
+                'message' => 'اطلاعات شما با موفقیت بروزرسانی شد!',
+                'user' => $user, // Optionally return the updated user
+            ]);
         }
 
         public function resendCode(Request $request)

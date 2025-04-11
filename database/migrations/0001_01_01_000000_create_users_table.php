@@ -15,11 +15,11 @@ return new class extends Migration {
             $table->string('name')->nullable();
             $table->string('email')->unique()->nullable();
             $table->string('phone_number')->unique();
-            $table->rememberToken();
+            $table->date('birthdate')->nullable();  // Add birthdate field
+            $table->enum('role', ['athlete', 'instructor'])->default('athlete'); // Default role as 'athlete'
+            $table->enum('gender', ['male', 'female'])->nullable(); // Default gender as 'male'
             $table->timestamps();
         });
-
-
 
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();

@@ -152,4 +152,10 @@ return [
     'uppercase'              => 'فیلد :attribute باید با حروف بزرگ باشد.',
     'url'                    => ':Attribute معتبر نمی‌باشد.',
     'uuid'                   => ':Attribute باید یک UUID معتبر باشد.',
+    'attributes' => [
+        'fullName' => 'نام و نام خانوادگی',
+        'gender' => 'جنسیت',
+        'birthDate' => 'تاریخ تولد',
+        'email' => 'ایمیل',
+    ],
 ];
