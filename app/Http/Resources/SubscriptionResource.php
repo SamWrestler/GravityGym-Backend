@@ -16,18 +16,18 @@ class SubscriptionResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'day_type' => $this->day_type,
+            'start_time' => $this->start_time,
+            'end_time' => $this->end_time,
             'session_count' => $this->session_count,
             'price' => $this->price,
+            'duration' => $this->duration,
             'is_active' => $this->is_active,
 
             // Related class info
             'class' => [
                 'id' => $this->gymClass?->id,
                 'name' => $this->gymClass?->name,
-                'day_type' => $this->gymClass?->day_type,
-                'start_time' => $this->gymClass?->start_time,
-                'end_time' => $this->gymClass?->end_time,
-                'instructor_name' => $this->gymClass?->instructor?->name,
             ]
         ];
     }

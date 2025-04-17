@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('subscription_id')->constrained('subscriptions')->onDelete('cascade');
             $table->date('start_date');
             $table->date('end_date');
-            $table->enum('status', ['active', 'expired', 'cancelled'])->default('active');
+            $table->enum('status', ['active', 'expired', 'cancelled','reserved'])->default('active');
 
         });
 

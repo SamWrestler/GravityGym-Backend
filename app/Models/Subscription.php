@@ -22,4 +22,14 @@ class Subscription extends Model
         return $this->hasMany(Enrollment::class, 'subscription_id');
     }
 
+    public function instructor()
+    {
+        return $this->belongsTo(User::class, 'instructor_id');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'subscription_id');
+    }
+
 }

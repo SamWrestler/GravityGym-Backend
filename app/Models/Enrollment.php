@@ -9,7 +9,7 @@ class Enrollment extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'subscription_id', 'start_date', 'end_date', 'status'];
+    protected $fillable = ['user_id', 'subscription_id', 'payment_id', 'start_date', 'end_date', 'status'];
 
     public $timestamps = false;
 
@@ -22,5 +22,12 @@ class Enrollment extends Model
     {
         return $this->belongsTo(Subscription::class, 'subscription_id');
     }
+
+    public function payment()
+    {
+        return $this->belongsTo(Payment::class);
+    }
+
+
 
 }

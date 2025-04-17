@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Payment extends Model
 {
-    use HasFactory;
 
     protected $fillable = [
         'user_id',
@@ -25,4 +24,15 @@ class Payment extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function subscription()
+    {
+        return $this->belongsTo(Subscription::class);
+    }
+
+    public function enrollment()
+    {
+        return $this->hasOne(Enrollment::class);
+    }
+
 }

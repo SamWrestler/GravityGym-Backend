@@ -17,21 +17,22 @@ class ClassResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'day_type' => $this->day_type,
-            'start_time' => $this->start_time,
-            'end_time' => $this->end_time,
             'is_active' => $this->is_active,
-            'instructor_name' => $this->instructor?->name,
             'subscriptions' => $this->whenLoaded('subscriptions', function () {
                 return $this->subscriptions->map(function ($sub) {
                     return [
                         'id' => $sub->id,
+                        'instructor_name' => $sub->instructor?->name,
+                        'day_type' => $sub->day_type,
+                        'start_time' => $sub->start_time,
+                        'end_time' => $sub->end_time,
                         'session_count' => $sub->session_count,
                         'price' => $sub->price,
+                        'duration' => $sub->duration, // اضافه کردن فیلد duration به ریسورس
                         'is_active' => $sub->is_active,
                     ];
                 });
             }),
-            ];
+        ];
     }
 }

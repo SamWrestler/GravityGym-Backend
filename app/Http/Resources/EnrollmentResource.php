@@ -20,7 +20,7 @@ class EnrollmentResource extends JsonResource
             'end_date' => $this->end_date,
             'status' => $this->status,
             'user' => $this->user_id,
-            'subscription' => $this->subscription_id,
+            'subscription' => new SubscriptionResource($this->whenLoaded('subscription')),
         ];
     }
 }

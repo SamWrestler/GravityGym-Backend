@@ -18,9 +18,5 @@ class GymClass extends Model
         return $this->hasMany(Subscription::class, 'class_id');
     }
 
-    public function instructor()
-    {
-        return $this->belongsTo(User::class, 'instructor_id');
-    }
 
 }
