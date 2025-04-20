@@ -34,6 +34,12 @@ Route::middleware(["auth:sanctum"])->get('/userEnrollments', function (Request $
     return EnrollmentResource::collection($userEnrollments);
 });
 
+Route::middleware(["auth:sanctum"])->get('/userEnrollment', function (Request $request) {
+    $user = $request->user();
+    $userEnrollments = $user->enrollments()->with('subscription')->where('id' , $request->enrollment_id)->get();
+    return EnrollmentResource::collection($userEnrollments);
+});
+
 Route::middleware(["auth:sanctum"])->get('/userActiveEnrollments', function (Request $request) {
     $user = $request->user();
     $userEnrollments = $user->enrollments()->with('subscription')->where('status', "active")->where('end_date' , '>' , now())->get();
