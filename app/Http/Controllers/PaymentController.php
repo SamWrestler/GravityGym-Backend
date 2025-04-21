@@ -3,25 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreatePaymentRequest;
-use App\Models\Enrollment;
-use App\Models\Payment;
-use App\Models\Subscription;
+use App\Http\Resources\PaymentResource;
+use App\Models\{Enrollment, Payment, Subscription};
 use Carbon\Carbon;
-use Database\Factories\EnrollmentFactory;
 use Illuminate\Http\Request;
-use Shetabit\Multipay\Exceptions\InvalidPaymentException;
-use Shetabit\Multipay\Invoice;
 use Illuminate\Support\Facades\Log;
-
-
+use Shetabit\Multipay\{Exceptions\InvalidPaymentException, Invoice};
 
 class PaymentController extends Controller
 {
-
+    /**
+     * متد آغاز فرایند پرداخت
+     */
     public function pay(CreatePaymentRequest $request)
     {
         $user = $request->user();
-        // ذخیره در دیتابیس
+
+        // ذخیره اولیه رکورد پرداخت در دیتابیس
         $record = Payment::create([
             'user_id' => $user->id,
             'subscription_id' => $request->subscription_id,
@@ -30,16 +28,16 @@ class PaymentController extends Controller
             'status' => 'pending',
         ]);
 
-        // ساخت فاکتور
+        // ساخت فاکتور پرداخت
         $invoice = (new Invoice)->amount($record->amount);
         $invoice->detail(['description' => $record->description]);
 
-        // لود تنظیمات
+        // بارگذاری تنظیمات و ایجاد پرداخت
         $paymentConfig = config('payment');
         $payment = new \Shetabit\Multipay\Payment($paymentConfig);
 
         try {
-
+            // ارسال درخواست پرداخت و دریافت آدرس پرداخت
             $paymentUrl = $payment->purchase($invoice, function($driver, $transactionId) use ($record) {
                 $record->update(['transaction_id' => $transactionId]);
             })->pay()->toJson();
@@ -54,16 +52,16 @@ class PaymentController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
-
-
-
     }
 
+    /**
+     * متد تایید پرداخت پس از بازگشت از درگاه
+     */
     public function verify(Request $request)
     {
         $authority = $request->input('authority');
 
-        // 1️⃣ پیدا کردن پرداخت
+        // ۱۰۰: یافتن پرداخت مربوطه با transaction ID
         $paymentRecord = Payment::where('transaction_id', $authority)->first();
 
         if (!$paymentRecord) {
@@ -77,7 +75,7 @@ class PaymentController extends Controller
             ], 404);
         }
 
-        // 2️⃣ اگر پرداخت قبلاً موفق شده، عملیات تکراری انجام نده
+        // بررسی وضعیت قبلی پرداخت برای جلوگیری از عملیات تکراری
         if ($paymentRecord->status === 'success') {
             return response()->json([
                 'status' => 'success',
@@ -90,26 +88,29 @@ class PaymentController extends Controller
         $payment = new \Shetabit\Multipay\Payment($config);
 
         try {
-            // 3️⃣ تایید با مبلغ واقعی
+            // تایید نهایی پرداخت با مبلغ واقعی
             $receipt = $payment
                 ->amount($paymentRecord->amount)
                 ->transactionId($authority)
                 ->verify();
 
-            // 4️⃣ بروزرسانی وضعیت پرداخت
+            // بروزرسانی رکورد پرداخت به وضعیت موفق
             $paymentRecord->update([
                 'status' => 'success',
                 'reference_id' => $receipt->getReferenceId(),
                 'raw_response' => json_encode($receipt->getDetails())
             ]);
 
-            // 5️⃣ جلوگیری از ثبت‌نام تکراری
+            // بررسی وجود ثبت‌نام قبلی برای این پرداخت
             $existingEnrollment = Enrollment::where('user_id', $paymentRecord->user_id)
                 ->where('payment_id', $paymentRecord->id)
                 ->first();
 
             if (!$existingEnrollment) {
-                $userActiveEnrollment = Enrollment::where('subscription_id', $paymentRecord->subscription_id)->where('user_id', $paymentRecord->user_id)->latest('end_date')->first();
+                $userActiveEnrollment = Enrollment::where('subscription_id', $paymentRecord->subscription_id)
+                    ->where('user_id', $paymentRecord->user_id)
+                    ->latest('end_date')->first();
+
                 $subscription = Subscription::find($paymentRecord->subscription_id);
 
                 if ($subscription) {
@@ -120,7 +121,9 @@ class PaymentController extends Controller
                         $startDate = Carbon::now();
                         $status = 'active';
                     }
+
                     $endDate = (clone $startDate)->add($subscription->duration_unit, $subscription->duration_value);
+
                     Enrollment::create([
                         'user_id' => $paymentRecord->user_id,
                         'subscription_id' => $paymentRecord->subscription_id,
@@ -131,12 +134,15 @@ class PaymentController extends Controller
                     ]);
                 }
             }
+
             return response()->json([
                 'status' => 'success',
                 'ref_id' => $receipt->getReferenceId(),
                 'message' => 'پرداخت با موفقیت تایید شد',
             ]);
+
         } catch (InvalidPaymentException $exception) {
+            // خطاهای قابل پیش‌بینی مربوط به تایید پرداخت
             $paymentRecord->update([
                 'status' => 'failed',
                 'raw_response' => json_encode(['error' => $exception->getMessage()])
@@ -146,7 +152,9 @@ class PaymentController extends Controller
                 'status' => 'failed',
                 'message' => 'پرداخت تایید نشد: ' . $exception->getMessage(),
             ], 422);
+
         } catch (\Throwable $e) {
+            // خطاهای غیرمنتظره
             Log::error('Unhandled payment verification error', [
                 'error' => $e->getMessage(),
                 'authority' => $authority,
@@ -157,5 +165,11 @@ class PaymentController extends Controller
                 'message' => 'خطای غیرمنتظره در بررسی پرداخت: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function all()
+    {
+        $payments = Payment::all();
+        return PaymentResource::collection($payments);
     }
 }

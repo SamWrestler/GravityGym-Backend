@@ -12,7 +12,7 @@ class UserFactory extends Factory
     public function definition(): array
     {
         $gender = $this->faker->randomElement(['male', 'female']);
-        $role = $this->faker->randomElement(['athlete', 'instructor']);
+        $role = $this->faker->randomElement(['athlete', 'instructor', 'admin', 'superUser']);
 
         // نام‌های فارسی
         $maleFirstNames = ['علی', 'رضا', 'حسین', 'محمد', 'مهدی', 'امین', 'فرزاد', 'سینا'];

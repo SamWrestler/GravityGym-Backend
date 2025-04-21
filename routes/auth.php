@@ -25,8 +25,6 @@ Route::post('/resendCode', [AuthenticationController::class, 'resendCode'])
     ->middleware('guest')
     ->name('resendCode');
 
-Route::post('/pay', [PaymentController::class, 'pay'])->name('pay')->middleware('auth:sanctum');
-Route::post('/verify', [PaymentController::class, 'verify'])->name('verify')->middleware('auth:sanctum');
 
 Route::post('/logout', [AuthenticationController::class, 'logout'])
 ->middleware('auth:sanctum')

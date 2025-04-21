@@ -1,57 +1,26 @@
 <?php
 
-use App\Http\Resources\ClassResource;
-use App\Http\Resources\EnrollmentResource;
-use App\Http\Resources\SubscriptionResource;
-use App\Http\Resources\UserResource;
-use App\Models\GymClass;
-use App\Models\Enrollment;
-use App\Models\Payment;
-use App\Models\Subscription;
-use App\Models\User;
-use Illuminate\Http\Request;
+use App\Http\Controllers\API\UserController;
+use App\Http\Controllers\API\GymClassController;
+use App\Http\Controllers\API\EnrollmentController;
+use App\Http\Controllers\API\SubscriptionController;
+use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
-    $user = $request->user()->load('enrollments.subscription.gymClass');
-    return new UserResource($user);
-});
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', [UserController::class, 'user']);
+    Route::get('/users', [UserController::class, 'index']);
 
-Route::middleware([])->get('/gymClassesToAttend', function () {
-    $classes = GymClass::with('subscriptions')->where('is_active', 1)->get();
-    return ClassResource::collection($classes);
-});
+    Route::get('/classes', [GymClassController::class, 'all']);
+    Route::get('/classes/active', [GymClassController::class, 'active']);
 
-Route::middleware([])->get('/userSubscriptions', function () {
-    $classes = Subscription::with('gymClass')->where('is_active', 1)->get();
-    return SubscriptionResource::collection($classes);
-});
+    Route::get('/subscriptions/active', [SubscriptionController::class, 'active']);
 
+    Route::get('/enrollments', [EnrollmentController::class, 'userAll']);
+    Route::get('/enrollments/active', [EnrollmentController::class, 'userActive']);
+    Route::get('/enrollments/{enrollment_id}', [EnrollmentController::class, 'userOne']);
 
-Route::middleware(["auth:sanctum"])->get('/userEnrollments', function (Request $request) {
-    $user = $request->user();
-    $userEnrollments = $user->enrollments()->with('subscription')->get();
-    return EnrollmentResource::collection($userEnrollments);
-});
-
-Route::middleware(["auth:sanctum"])->get('/userEnrollment', function (Request $request) {
-    $user = $request->user();
-    $userEnrollments = $user->enrollments()->with('subscription')->where('id' , $request->enrollment_id)->get();
-    return EnrollmentResource::collection($userEnrollments);
-});
-
-Route::middleware(["auth:sanctum"])->get('/userActiveEnrollments', function (Request $request) {
-    $user = $request->user();
-    $userEnrollments = $user->enrollments()->with('subscription')->where('status', "active")->where('end_date' , '>' , now())->get();
-    return EnrollmentResource::collection($userEnrollments);
-});
-
-//
-Route::middleware([])->get('/salam', function (Request $request) {
-    $enrollment = Enrollment::where('id' , 31)->first();
-    $existingEnrollment = $enrollment->payment()->where('transaction_id', 'S000000000000000000000000000000338o1')->first();
-    $sub_id = 10;
-    $activeEnrollment = Enrollment::where('subscription_id' , $sub_id)->where('end_data' , ">" , now())->where('status', 'active');
-
-    return $existingEnrollment;
+    Route::post('/pay', [PaymentController::class, 'pay']);
+    Route::post('/verify', [PaymentController::class, 'verify']);
+    Route::get('/payments', [PaymentController::class, 'all']);
 });

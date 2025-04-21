@@ -61,6 +61,7 @@
                 $token = $user->createToken('auth_token')->plainTextToken;
 
                 return response()->json([
+                    'user' => $user,
                     'message' => 'Validation was successful!',
                     'token' => $token,
                 ]);

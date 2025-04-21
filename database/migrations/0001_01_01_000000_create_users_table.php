@@ -16,7 +16,7 @@ return new class extends Migration {
             $table->string('email')->unique()->nullable();
             $table->string('phone_number')->unique();
             $table->date('birthdate')->nullable();  // Add birthdate field
-            $table->enum('role', ['athlete', 'instructor'])->default('athlete'); // Default role as 'athlete'
+            $table->enum('role', ['athlete', 'instructor', 'admin' , 'superUser'])->default('athlete'); // Default role as 'athlete'
             $table->enum('gender', ['male', 'female'])->nullable(); // Default gender as 'male'
             $table->timestamps();
         });
