@@ -17,43 +17,88 @@ class SubscriptionFactory extends Factory
 
     public function definition(): array
     {
-        $sessionCount = $this->faker->randomElement([8, 12, 16]);
+        $sessionCount = $this->faker->randomElement([4, 8, 12]);
 
-        // قیمت به میلیون تومان بین 1.0 تا 4.0
-        $price = $this->faker->randomFloat(1, 1.0, 4.0);
+        $classTypesFa = ['گروهی', 'نیمه‌خصوصی', 'خصوصی'];
+        $classType = $this->faker->randomElement($classTypesFa);
 
-        // ساعت شروع و پایان
+        $className = GymClass::inRandomOrder()->first()?->name ?? 'کلیستنیکس';
+
+        // ساختار قیمت‌ها به میلیون تومان
+        $priceList = [
+            'کلیستنیکس' => [
+                'گروهی' => [8 => 2.5, 12 => 3.0],
+                'نیمه‌خصوصی' => [8 => 3.8, 12 => 4.2],
+                'خصوصی' => [4 => 3.6, 8 => 6.8, 12 => 9.0],
+            ],
+            'ژیمناستیک' => [
+                'گروهی' => [8 => 2.5, 12 => 3.0],
+                'نیمه‌خصوصی' => [8 => 3.8, 12 => 4.2],
+                'خصوصی' => [4 => 3.6, 8 => 6.8, 12 => 9.0],
+            ],
+            'فانکشنال' => [
+                'گروهی' => [8 => 2.5, 12 => 3.0],
+                'نیمه‌خصوصی' => [8 => 3.8, 12 => 4.2],
+                'خصوصی' => [4 => 3.6, 8 => 6.8, 12 => 9.0],
+            ],
+            'یوگا' => [
+                'گروهی' => [8 => 2.5, 12 => 3.0],
+                'نیمه‌خصوصی' => [8 => 3.2, 12 => 3.8],
+                'خصوصی' => [4 => 2.2, 8 => 5.8, 12 => 7.0],
+            ],
+            'اریال هوپ' => [
+                'گروهی' => [8 => 2.5, 12 => 3.0],
+                'نیمه‌خصوصی' => [8 => 3.2, 12 => 3.8],
+                'خصوصی' => [4 => 2.2, 8 => 5.8, 12 => 7.0],
+            ],
+            'تی آر ایکس' => [
+                'گروهی' => [8 => 2.5, 12 => 3.0],
+                'نیمه‌خصوصی' => [8 => 3.2, 12 => 3.8],
+                'خصوصی' => [4 => 2.2, 8 => 5.8, 12 => 7.0],
+            ],
+            'تکواندو' => [
+                'گروهی' => [8 => 2.5, 12 => 3.0],
+                'نیمه‌خصوصی' => [8 => 3.8, 12 => 4.2],
+                'خصوصی' => [4 => 3.6, 8 => 6.8, 12 => 9.0],
+            ],
+        ];
+
+        // قیمت از لیست یا مقدار پیش‌فرض
+        $price = $priceList[$className][$classType][$sessionCount] ?? 3.0;
+
         $startTimes = ['07:00', '09:00', '11:00', '14:00', '16:00', '18:00', '20:00'];
         $startTime = $this->faker->randomElement($startTimes);
 
-        $endTime = Carbon::createFromFormat('H:i', $startTime)
-            ->addHours(rand(1, 2))
-            ->format('H:i');
+        $endTime = Carbon::createFromFormat('H:i', $startTime)->addHours(rand(1, 2))->format('H:i');
 
-        // مقدار مدت زمان اشتراک
         $durationOptions = [
-            ['value' => 1, 'unit' => 'month'],    // ماهانه
-            ['value' => 2, 'unit' => 'month'],    // دوماهه
-            ['value' => 3, 'unit' => 'month'],    // سه‌ماهه
-            ['value' => 6, 'unit' => 'month'],    // شش‌ماهه
-            ['value' => 12, 'unit' => 'month'],   // یکساله
-            ['value' => 7, 'unit' => 'day'],      // هفت‌روزه (هفته‌ای)
-            ['value' => 14, 'unit' => 'day'],     // دو هفته‌ای
-            ['value' => 30, 'unit' => 'day'],     // یک ماه به صورت روزانه
+            ['value' => 1, 'unit' => 'ماه'],
+            ['value' => 2, 'unit' => 'ماه'],
+            ['value' => 3, 'unit' => 'ماه'],
+            ['value' => 6, 'unit' => 'ماه'],
+            ['value' => 12, 'unit' => 'ماه'],
         ];
         $duration = $this->faker->randomElement($durationOptions);
 
+        $dayCombinations = [
+            4 => [[0, 2]],
+            8 => [[0, 2], [3, 1]],
+            12 => [[0, 2, 4], [6, 1, 3]],
+            16 => [[0, 2, 4, 6], [0, 2, 4, 1], [0, 2, 4, 3], [6, 1, 3, 0], [6, 1, 3, 2], [6, 1, 3, 4]],
+        ];
+        $classDays = collect($dayCombinations[$sessionCount] ?? [[0, 2]])->random();
+
         return [
-            'class_id' => GymClass::inRandomOrder()->first()?->id ?? GymClass::factory()->create()->id,
-            'instructor_id' => User::where('role', 'instructor')->inRandomOrder()->first()?->id
-                ?? User::factory()->create(['role' => 'instructor'])->id,
-            'day_type' => $this->faker->randomElement(['فرد', 'زوج']),
+            'class_id' => GymClass::where('name', $className)->first()?->id ?? GymClass::factory()->create(['name' => $className])->id,
+            'instructor_id' => User::where('role', 'instructor')->inRandomOrder()->first()?->id ?? User::factory()->create(['role' => 'instructor'])->id,
+            'class_days' => $classDays,
             'start_time' => $startTime,
             'end_time' => $endTime,
             'session_count' => $sessionCount,
             'price' => $price,
             'duration_value' => $duration['value'],
             'duration_unit' => $duration['unit'],
+            'class_type' => $classType,
             'is_active' => true,
         ];
     }

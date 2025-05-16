@@ -27,9 +27,11 @@ class EnrollmentResource extends JsonResource
             'start_date' => Jalalian::fromDateTime($this->start_date)->format('Y/m/d'),
             'end_date' => Jalalian::fromDateTime($this->end_date)->format('Y/m/d'),
             'status' => $this->status,
-            'remaining_days' => $daysRemaining, // Add the calculated remaining days here
+            'remaining_days' => $daysRemaining,
             'user' => $this->user_id,
+            'attendances' => AttendanceResource::collection($this->whenLoaded('attendances')),
             'subscription' => new SubscriptionResource($this->whenLoaded('subscription')),
+            'userInfo' => new UserResource($this->whenLoaded('user')),
         ];
     }
 }

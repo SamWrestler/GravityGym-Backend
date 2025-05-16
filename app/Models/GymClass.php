@@ -10,8 +10,12 @@ class GymClass extends Model
     use HasFactory;
 
     protected $table = "classes";
-    protected $fillable = ['name', 'instructor_id', 'day_type', 'start_time', 'end_time', 'is_active'];
+    protected $fillable = ['name', 'is_active'];
     public $timestamps = false;
+    protected $casts = [
+        'class_days' => 'array',
+        'price' => 'float',
+    ];
 
     public function subscriptions()
     {

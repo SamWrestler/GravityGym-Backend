@@ -9,8 +9,25 @@ class Subscription extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['class_id', 'session_count', 'price', 'is_active'];
+    protected $fillable = [
+        'class_id',
+        'name',
+        'instructor_id',
+        'class_days',
+        'start_time',
+        'end_time',
+        'session_count',
+        'price',
+        'class_type',
+        'duration_value',
+        'duration_unit',
+        'is_active',
+    ];
     public $timestamps = false;
+
+    protected $casts = [
+        'class_days' => 'array',
+    ];
 
     public function gymClass()
     {

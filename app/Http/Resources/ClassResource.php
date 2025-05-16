@@ -23,14 +23,20 @@ class ClassResource extends JsonResource
                 return $this->subscriptions->map(function ($sub) {
                     return [
                         'id' => $sub->id,
-                        'instructor_name' => $sub->instructor?->name,
-                        'day_type' => $sub->day_type,
+                        'sub_name' => $sub->name,
+                        'instructor' => $sub->instructor?->name,
+                        'class_days' => $sub->class_days,
                         'start_time' => Jalalian::fromDateTime($sub->start_time)->format('H:i'), // Format without seconds
                         'end_time' => Jalalian::fromDateTime($sub->end_time)->format('H:i'), // Format without seconds
                         'session_count' => $sub->session_count,
                         'price' => $sub->price,
-                        'duration' => $sub->duration, // اضافه کردن فیلد duration به ریسورس
+                        'class_type' => $sub->class_type,
+                        'duration_value' => $sub->duration_value,
+                        'duration_unit' => $sub->duration_unit,
                         'is_active' => $sub->is_active,
+                        'enrollments' => $sub->relationLoaded('enrollments')
+                            ? EnrollmentResource::collection($sub->enrollments)
+                            : [],
                     ];
                 });
             }),

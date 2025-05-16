@@ -19,7 +19,8 @@ class SubscriptionResource extends JsonResource
 
         return [
             'id' => $this->id,
-            'day_type' => $this->day_type,
+            'sub_name' => $this->name,
+            'class_days' => $this->class_days,
             'start_time' => Jalalian::fromDateTime($this->start_time)->format('H:i'), // Format without seconds
             'end_time' => Jalalian::fromDateTime($this->end_time)->format('H:i'), // Format without seconds
             'session_count' => $this->session_count,
@@ -27,7 +28,11 @@ class SubscriptionResource extends JsonResource
             'duration_value' => $this->duration_value,
             'duration_unit' => $this->duration_unit,
             'is_active' => $this->is_active,
+            'class_type' => $this->class_type,
             'instructor' => $this->instructor?->name,
+            'enrollments' => $this->relationLoaded('enrollments')
+                ? EnrollmentResource::collection($this->enrollments)
+                : [],
             // Related class info
             'class' => [
                 'id' => $this->gymClass?->id,

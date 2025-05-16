@@ -3,11 +3,13 @@
     namespace App\Http\Controllers\Auth;
 
     use App\Http\Resources\UserResource;
+    use App\Models\Disability;
     use App\Models\User;
     use App\Http\Controllers\Controller;
     use App\Models\Otp;
     use App\Notifications\OtpNotification;
     use Illuminate\Http\Request;
+    use Illuminate\Validation\Rule;
     use Morilog\Jalali\Jalalian;
 
     class AuthenticationController extends Controller
@@ -21,16 +23,17 @@
             ]);
             $user = User::firstOrCreate(['phone_number' => $validatedData['phone_number']]);
             $request->session()->put('auth', [
-                'user' => $user,
+                'user' => new UserResource($user),
                 'remember' => $request->remember
             ]);
 
             $code = Otp::generateCode($user);
 
-            $notificationStatus = $user->notify(new OtpNotification($code));
+//            $notificationStatus = $user->notify(new OtpNotification($code));
 
-            return response()->json($notificationStatus);
+//            return response()->json($notificationStatus);
 
+            return response()->json(['successful']);
 
 
         }
@@ -61,7 +64,7 @@
                 $token = $user->createToken('auth_token')->plainTextToken;
 
                 return response()->json([
-                    'user' => $user,
+                    'user' => new UserResource($user),
                     'message' => 'Validation was successful!',
                     'token' => $token,
                 ]);
@@ -72,25 +75,50 @@
         {
             $validatedData = $request->validate([
                 'fullName' => 'required|string|max:255',
-                'email' => 'nullable|email|unique:users,email',
-                'gender' => 'required|in:male,female',
-                'birthDate' => 'required',
+                'email' => 'nullable|email|unique:users,email,' . auth()->id(),
+                'gender' => ['required', Rule::in(['male', 'female'])],
+                'birthDate' => 'required|string',
+                'national_id' => 'required|string|max:20',
+                'height' => 'required|integer|min:50|max:300',
+                'weight' => 'required|integer|min:20|max:500',
+                'insurance' => ['required', Rule::in(['yes', 'no'])],
+                'disabilities' => 'required|array',
+                'disabilities.*.value' => 'nullable|string|max:255',
+                'terms' => 'required|accepted',
             ]);
+
             $birthDateGregorian = Jalalian::fromFormat('Y/m/d', $validatedData['birthDate'])->toCarbon()->format('Y-m-d');
+
             $user = auth()->user();
 
             $user->update([
                 'name' => $validatedData['fullName'],
-                'email' => $validatedData['email'], // If email is provided
+                'email' => $validatedData['email'],
                 'gender' => $validatedData['gender'],
-                'birthdate' => $birthDateGregorian, // Store the converted birth date
+                'birthdate' => $birthDateGregorian,
+                'national_id' => $validatedData['national_id'] ?? null,
+                'height' => $validatedData['height'] ?? null,
+                'weight' => $validatedData['weight'] ?? null,
+                'insurance' => $validatedData['insurance'],
+                'terms_accepted' => $validatedData['terms'],
+                'terms_accepted_at' => now(),
             ]);
+
+            // 🔗 Handle disabilities relation
+            if (!empty($validatedData['disabilities'])) {
+                $disabilityIds = collect($validatedData['disabilities'])->map(function ($item) {
+                    return Disability::firstOrCreate(['name' => $item['value']])->id;
+                });
+
+                $user->disabilities()->sync($disabilityIds);
+            }
 
             return response()->json([
                 'message' => 'اطلاعات شما با موفقیت بروزرسانی شد!',
-                'user' => $user, // Optionally return the updated user
+                'user' => $user->load('disabilities'),
             ]);
         }
+
 
         public function resendCode(Request $request)
         {

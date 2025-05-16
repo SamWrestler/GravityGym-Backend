@@ -27,13 +27,20 @@ class UserFactory extends Factory
 
         $lastName = $this->faker->randomElement($lastNames);
 
+
         return [
             'name' => "{$firstName} {$lastName}",
             'email' => $this->faker->unique()->safeEmail(),
             'phone_number' => $this->faker->unique()->numerify('09#########'),
+            'national_id' => $this->faker->unique()->numerify('##########'), // 10-digit code
             'birthdate' => $this->faker->date('Y-m-d', now()->subYears(17)),
             'role' => $role,
             'gender' => $gender,
+            'height' => $this->faker->numberBetween(150, 200), // cm
+            'weight' => $this->faker->numberBetween(50, 120),  // kg
+            'insurance' => $this->faker->randomElement(['yes', 'no']),
+            'terms_accepted' => true,
+            'terms_accepted_at' => now(),
         ];
     }
 }

@@ -15,9 +15,15 @@ return new class extends Migration {
             $table->string('name')->nullable();
             $table->string('email')->unique()->nullable();
             $table->string('phone_number')->unique();
+            $table->string('national_id')->nullable()->unique();
             $table->date('birthdate')->nullable();  // Add birthdate field
             $table->enum('role', ['athlete', 'instructor', 'admin' , 'superUser'])->default('athlete'); // Default role as 'athlete'
             $table->enum('gender', ['male', 'female'])->nullable(); // Default gender as 'male'
+            $table->integer('height')->nullable();
+            $table->integer('weight')->nullable();
+            $table->enum('insurance', ['yes', 'no'])->default('no');
+            $table->boolean('terms_accepted')->default(false);
+            $table->timestamp('terms_accepted_at')->nullable();
             $table->timestamps();
         });
 

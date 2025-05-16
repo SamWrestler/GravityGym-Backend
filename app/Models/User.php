@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -22,7 +23,14 @@ class User extends Authenticatable
         'email',
         'phone_number',
         'gender',
-        'birthdate'
+        'birthdate',
+        'height',
+        'weight',
+        'role',
+        'insurance',
+        'national_id',
+        'terms_accepted',
+        'terms_accepted_at',
     ];
 
     /**
@@ -57,8 +65,17 @@ class User extends Authenticatable
 
     public function subscriptions()
     {
-        return $this->hasMany(GymClass::class, 'instructor_id');
+        return $this->hasMany(Subscription::class, 'instructor_id');
     }
 
+    public function disabilities()
+    {
+        return $this->belongsToMany(Disability::class);
+    }
+
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class);
+    }
 
 }

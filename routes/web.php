@@ -1,10 +1,7 @@
 <?php
 
 use App\Http\Resources\SubscriptionResource;
-use App\Http\Resources\UserResource;
 use App\Models\Subscription;
-use App\Models\GymClass;
-
 use Illuminate\Support\Facades\Route;
 
 
