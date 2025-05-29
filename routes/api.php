@@ -15,17 +15,22 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users', [UserController::class, 'all']);
     Route::post('/user/create', [UserController::class, 'create']);
     Route::get('/instructors', [UserController::class, 'instructors']);
-    Route::get('/users/{user_id}', [UserController::class, 'userOne']);
+    Route::get('/users/{user}', [UserController::class, 'userOne']);
+    Route::delete('/users/{user}/delete', [UserController::class, 'delete']);
+    Route::patch('/users/{user}/update', [UserController::class, 'update']);
+    Route::patch('/user/update', [UserController::class, 'update']);
+
 
     Route::get('/classes', [GymClassController::class, 'all']);
-    Route::get('/classes/active', [GymClassController::class, 'active']);
     Route::get('/class/{class}', [GymClassController::class, 'class']);
+    Route::delete('/class/{class}/delete', [GymClassController::class, 'delete']);
     Route::post('/class/create', [GymClassController::class, 'create']);
 
 
     Route::get('/subscriptions/active', [SubscriptionController::class, 'active']);
     Route::get('/subscription/{subscription}', [SubscriptionController::class, 'subscription']);
     Route::patch('/subscription/{subscription}', [SubscriptionController::class, 'update']);
+    Route::delete('/subscription/{subscription}/delete', [SubscriptionController::class, 'delete']);
 
     Route::get('/enrollments', [EnrollmentController::class, 'userAll']);
     Route::get('/enrollments/active', [EnrollmentController::class, 'userActive']);
@@ -43,3 +48,4 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 });
+Route::get('/classes/active', [GymClassController::class, 'active']);

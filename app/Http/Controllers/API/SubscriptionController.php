@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 
 class SubscriptionController extends Controller
 {
+
     public function active()
     {
         return SubscriptionResource::collection(
@@ -53,7 +54,7 @@ class SubscriptionController extends Controller
             'duration_value' => $validated['duration_value'],
             'duration_unit' => $validated['duration_unit'],
             'is_active' => $validated['subscription_status'],
-            'price' => round((float) $validated['price'] / 1000000, 2), // به تومان (مثلاً تبدیل ۱۰۰۰۰۰۰ به ۱۰.۰۰)
+            'price' => round((float)$validated['price'] / 1_000_000, 2), // به تومان (مثلاً تبدیل ۱۰۰۰۰۰۰ به ۱۰.۰۰)
         ]);
 
         return response()->json([
@@ -62,7 +63,7 @@ class SubscriptionController extends Controller
         ], 201);
     }
 
-    public function update(Request $request,Subscription $subscription)
+    public function update(Request $request, Subscription $subscription)
     {
         $validated = $request->validate([
             'subscription_name' => 'required|string|max:255',
@@ -92,12 +93,26 @@ class SubscriptionController extends Controller
             'duration_unit' => $validated['duration_unit'],
             'is_active' => $validated['subscription_status'],
             'class_id' => $validated['class_id'],
-            'price' => round((float) $validated['price'] / 1000000, 2),
+            'price' => round((float)$validated['price'] / 1000000, 2),
         ]);
 
         return response()->json([
             'message' => 'اشتراک با موفقیت به‌روزرسانی شد.',
             'subscription' => new SubscriptionResource($subscription),
+        ], 200);
+    }
+
+    public function delete(Subscription $subscription)
+    {
+        foreach ($subscription->enrollments as $enrollment) {
+            $enrollment->attendances()->delete(); // Soft delete attendances
+            $enrollment->delete();                // Soft delete enrollment
+        }
+
+        $subscription->delete(); // Soft delete subscription
+
+        return response()->json([
+            'message' => 'Subscription and related enrollments (with attendances) soft deleted successfully.'
         ], 200);
     }
 }

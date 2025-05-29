@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Otp;
 use Illuminate\Console\Command;
 use Carbon\Carbon;
+
 class DeleteExpiredOtps extends Command
 {
     /**
@@ -13,7 +14,8 @@ class DeleteExpiredOtps extends Command
      * @var string
      */
     protected $signature = 'otp:cleanup';
-    protected $description = "Delete expired OTP codes from the database";
+    protected $description = 'Delete expired OTPs.';
+
     /**
      * The console command description.
      *
@@ -25,7 +27,7 @@ class DeleteExpiredOtps extends Command
      */
     public function handle()
     {
-        $expiredCount = Otp::where('expires_at', '<', Carbon::now()->subMinutes(5))->delete();
+        $expiredCount = Otp::where('expires_at', '<', Carbon::now()->subMinutes(10))->delete();
         $this->info("✅ Deleted $expiredCount expired OTP(s).");
     }
 }

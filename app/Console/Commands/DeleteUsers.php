@@ -3,44 +3,32 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 class DeleteUsers extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'users:cleanup';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Delete users who have not completed the signup process.';
 
-    /**
-     * Execute the console command.
-     */
     public function handle()
     {
-        // Find users where name is NULL or empty string
-        $users = User::whereNull('name')
-            ->orWhere('name', '')
+        $cutoff = Carbon::now()->subHours(24);
+        $users = User::where(function ($q) {
+            $q->whereNull('name')
+                ->orWhere('name', '');
+        })
+            ->where('created_at', '<', $cutoff)
+            ->whereDoesntHave('otp', function ($q) {
+                $q->where('expires_at', '<', Carbon::now()->subMinutes(10));
+            })
             ->get();
-
-        // Count for log
         $count = $users->count();
-
-        // Delete them
-        foreach ($users as $user) {
-            $user->delete();
+        if ($count === 0) {
+            $this->info('❌ No stale users to delete.');
+            return;
         }
-
-        // Show result in console
-        $this->info("✅ Deleted $count user(s) with empty names.");
+        User::whereIn('id', $users->pluck('id'))->delete();
+        $this->info("✅ Deleted $count user(s) with empty names and no valid OTPs.");
     }
-
 }

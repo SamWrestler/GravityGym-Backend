@@ -162,6 +162,7 @@ return [
         'height' => 'قد',
         'weight' => 'وزن',
         'disabilities' => 'شرایط خاص',
+        'code' => 'کد تایید',
         'insurance' => 'بیمه‌نامه ورزشی',
         'subscriptions' => 'اشتراک‌ها',
         'class_name' => 'نام کلاس',

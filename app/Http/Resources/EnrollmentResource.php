@@ -19,8 +19,13 @@ class EnrollmentResource extends JsonResource
 
 
         $endDate = Carbon::parse($this->end_date);
-        $today = now()->startOfDay();
-        $daysRemaining = $today->diffInDays($endDate);
+        $startDate = Carbon::parse($this->start_date);
+
+        if ($this->status === 'reserved') {
+            $daysRemaining = max(0, ceil(now()->diffInDays($startDate, false)));
+        } else {
+            $daysRemaining = ceil($startDate->diffInDays($endDate));
+        }
 
         return [
             'id' => $this->id,
