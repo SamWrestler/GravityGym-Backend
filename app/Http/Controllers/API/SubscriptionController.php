@@ -18,6 +18,13 @@ class SubscriptionController extends Controller
         );
     }
 
+    public function instructor(Request $request)
+    {
+        $user = $request->user();
+        $subscriptions = $user->subscriptions->load('gymClass', 'enrollments', 'enrollments.user');
+        return SubscriptionResource::collection($subscriptions);
+    }
+
     public function subscription(Subscription $subscription)
     {
         $subscription->load(['enrollments', 'enrollments.user']);

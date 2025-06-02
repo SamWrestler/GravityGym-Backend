@@ -28,6 +28,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     Route::get('/subscriptions/active', [SubscriptionController::class, 'active']);
+    Route::get('/subscriptions/instructor', [SubscriptionController::class, 'instructor']);
     Route::get('/subscription/{subscription}', [SubscriptionController::class, 'subscription']);
     Route::patch('/subscription/{subscription}', [SubscriptionController::class, 'update']);
     Route::delete('/subscription/{subscription}/delete', [SubscriptionController::class, 'delete']);
